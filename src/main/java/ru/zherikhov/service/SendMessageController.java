@@ -18,7 +18,7 @@ public class SendMessageController {
         return sendMessage;
     }
 
-    public EditMessageText sendInlineMessage(Update update, String text) {
+    public EditMessageText editInlineMessage(Update update, String text) {
         EditMessageText editMessageText = new EditMessageText();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
@@ -32,7 +32,8 @@ public class SendMessageController {
     public SendMessage createMessageFromVlad(Update update, String message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(691103949L);
-        sendMessage.setText(message);
+        sendMessage.setText("*" + message + "*");
+        sendMessage.setParseMode(ParseMode.MARKDOWN);
         return sendMessage;
     }
 }

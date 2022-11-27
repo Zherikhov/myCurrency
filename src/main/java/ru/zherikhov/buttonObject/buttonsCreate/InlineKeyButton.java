@@ -18,9 +18,9 @@ public class InlineKeyButton {
                 keyboardRow.get(keyboardRow.size() - 1).setText(buttonName);
                 //Установка target и original в CallbackData для дальнейшей работы с парами валют
                 if (i == 0) {
-                    keyboardRow.get(keyboardRow.size() - 1).setCallbackData("target:" + buttonName);
-                } else {
                     keyboardRow.get(keyboardRow.size() - 1).setCallbackData("original:" + buttonName);
+                } else {
+                    keyboardRow.get(keyboardRow.size() - 1).setCallbackData("target:" + buttonName);
                 }
             }
             keyboardList.add(keyboardRow);

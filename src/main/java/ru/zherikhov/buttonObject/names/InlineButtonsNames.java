@@ -10,6 +10,7 @@ public class InlineButtonsNames {
     {
         parsers.add("Биржевой");
         parsers.add("В разработке");
+        parsers.add("Биржевой (live)");
     }
 
     public final List<String> currency = new ArrayList<>();
