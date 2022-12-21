@@ -22,11 +22,11 @@ public class InlineKeyButtonService { //TODO - нужно объеденить s
         return sendMessage;
     }
 
-    public SendMessage setInlineButtonInLine(Update update, String text, List<String> names) {
+    public SendMessage setInlineButtonInLine(Update update, String text, List<List<String>> names) {
 
         SendMessage sendMessage = sendMessageController.createMessage(update, text);
         keyboardMarkup =
-                inlineKeyButtons.setKeyboardMarkup(inlineKeyButtons.createInlineButtonInLine(names));
+                inlineKeyButtons.setKeyboardMarkup(inlineKeyButtons.createInlineButton(names));
 
         sendMessage.setReplyMarkup(keyboardMarkup);
         return sendMessage;

@@ -28,17 +28,19 @@ public class InlineKeyButton {
         return keyboardList;
     }
 
-    //Создание объектов InlineKeyboardButton в одину строку
-    public List<List<InlineKeyboardButton>> createInlineButtonInLine(List<String> buttonsNames) {
+    //Создание объектов InlineKeyboardButton
+    public List<List<InlineKeyboardButton>> createInlineButton(List<List<String>> buttonsNames) {
         List<List<InlineKeyboardButton>> keyboardList = new ArrayList<>();
-        List<InlineKeyboardButton> keyboardRow = new ArrayList<>();
 
-        for (String buttonName : buttonsNames) {
-            keyboardRow.add(new InlineKeyboardButton());
-            keyboardRow.get(keyboardRow.size() - 1).setText(buttonName);
-            keyboardRow.get(keyboardRow.size() - 1).setCallbackData(buttonName);
+        for (List<String> rowButtons : buttonsNames) {
+            List<InlineKeyboardButton> keyboardRow = new ArrayList<>();
+            for (String buttonName : rowButtons) {
+                keyboardRow.add(new InlineKeyboardButton());
+                keyboardRow.get(keyboardRow.size() - 1).setText(buttonName);
+                keyboardRow.get(keyboardRow.size() - 1).setCallbackData(buttonName);
+            }
+            keyboardList.add(keyboardRow);
         }
-        keyboardList.add(keyboardRow);
         return keyboardList;
     }
 

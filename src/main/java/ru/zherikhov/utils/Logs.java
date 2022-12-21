@@ -6,7 +6,6 @@ import org.telegram.telegrambots.meta.api.objects.User;
 public class Logs {
     public static String sendConsoleLog(Update update) {
         User user;
-
         if (update.hasCallbackQuery()) {
             user = update.getCallbackQuery().getFrom();
         } else {

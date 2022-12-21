@@ -6,7 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class SendMessageController {
-    public SendMessage createMessage(Update update, String message) {
+    public SendMessage createMessage(Update update, String text) {
         SendMessage sendMessage = new SendMessage();
         if (update.hasCallbackQuery()) {
             sendMessage.setChatId(update.getCallbackQuery().getMessage().getChatId());
@@ -14,7 +14,8 @@ public class SendMessageController {
             sendMessage.setChatId(update.getMessage().getChatId());
         }
 
-        sendMessage.setText(message);
+        sendMessage.setText(text);
+        sendMessage.setParseMode(ParseMode.HTML);
         return sendMessage;
     }
 
@@ -24,16 +25,17 @@ public class SendMessageController {
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         editMessageText.setChatId(chatId);
         editMessageText.setMessageId(messageId);
-        editMessageText.setText("`" + text + "`");
-        editMessageText.setParseMode(ParseMode.MARKDOWN);
+        editMessageText.setText(text);
+        //editMessageText.setText("`" + text + "`");
+        //editMessageText.setParseMode(ParseMode.MARKDOWN);
         return editMessageText;
     }
 
-    public SendMessage createMessageFromVlad(Update update, String message) {
+    public SendMessage createMessageFromVlad(String text) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(691103949L);
-        sendMessage.setText("*" + message + "*");
-        sendMessage.setParseMode(ParseMode.MARKDOWN);
+        sendMessage.setText("<b>" + text + "</b>");
+        sendMessage.setParseMode(ParseMode.HTML);
         return sendMessage;
     }
 }

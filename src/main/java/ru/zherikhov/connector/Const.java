@@ -12,6 +12,9 @@ public class Const {
     public static final String USER_NAME = "user_name";
     public static final String FIRST_NAME = "first_name";
     public static final String LAST_NAME = "last_name";
+    public static final String STATUS = "status";
+    public static final String COUPLE = "couple";
+    public static final String COUPLE_VALUE = "couple_value";
 
     public static final String USD_EUR = "usd_eur";
     public static final String USD_RUB = "usd_rub";

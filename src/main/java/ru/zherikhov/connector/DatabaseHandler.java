@@ -6,7 +6,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static ru.zherikhov.connector.Const.*;
 
@@ -44,6 +46,17 @@ public class DatabaseHandler extends Configs {
         resultSet = preparedStatement.executeQuery();
         return resultSet;
     }
+
+    @SneakyThrows
+    public ResultSet getAllUsers() {
+        ResultSet resultSet;
+        String insert = "SELECT * FROM users";
+        PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
+        resultSet = preparedStatement.executeQuery();
+        return resultSet;
+    }
+
+
 
     @SneakyThrows
     public void setCurrenciesInDataBaseForUsd(HashMap<String, String> hashMap) {
@@ -124,5 +137,13 @@ public class DatabaseHandler extends Configs {
 
         resultSet = preparedStatement.executeQuery();
         return resultSet;
+    }
+
+    @SneakyThrows
+    public void setCurrencyCouple(String couple, long idTelegram) {
+        String insert = "UPDATE " + USER_TABLE + " SET " + COUPLE + " = " + "'" + couple + "'" + " WHERE " + ID_TELEGRAM + " = " + idTelegram;
+
+        PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
+        preparedStatement.executeUpdate();
     }
 }

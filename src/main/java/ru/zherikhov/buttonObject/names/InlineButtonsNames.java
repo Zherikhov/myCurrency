@@ -10,7 +10,20 @@ public class InlineButtonsNames {
     {
         parsers.add("Биржевой");
         parsers.add("В разработке");
-        parsers.add("Биржевой (live)");
+    }
+
+    public final List<String> parsersLive = new ArrayList<>();
+
+    {
+        parsersLive.add("Биржевой (live)");
+        parsersLive.add("В разработке (live)");
+    }
+
+    public List<List<String>> InlineRows = new ArrayList<>();
+
+    {
+        InlineRows.add(parsers);
+        InlineRows.add(parsersLive);
     }
 
     public final List<String> currency = new ArrayList<>();
@@ -21,5 +34,11 @@ public class InlineButtonsNames {
         currency.add("RUB");
         currency.add("GEL");
         currency.add("ARS");
+    }
+
+    public List<List<String>> InlineRowsOfSchedule = new ArrayList<>();
+
+    {
+        InlineRowsOfSchedule.add(parsers);
     }
 }

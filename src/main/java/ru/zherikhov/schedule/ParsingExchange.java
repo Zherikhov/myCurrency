@@ -1,4 +1,4 @@
-package ru.zherikhov;
+package ru.zherikhov.schedule;
 
 import lombok.SneakyThrows;
 import ru.zherikhov.buttonObject.names.InlineButtonsNames;

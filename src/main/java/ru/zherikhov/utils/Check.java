@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class Check {
     //Проверка ввел ли пользователь bot команду и вернуть ее при наличии
-    public String checkCommand(Message message) {
+    public static String checkCommand(Message message) {
         String command = null;
         if (message != null && message.hasText() && message.hasEntities()) {
             Optional<MessageEntity> commandEntity =
@@ -21,7 +21,7 @@ public class Check {
         return command;
     }
 
-    public boolean checkUser(List<MyUser> myUserList, long userId) {
+    public static boolean checkUser(List<MyUser> myUserList, long userId) {
         boolean check = false;
         for (MyUser user : myUserList) {
             if (user.getUserId() == userId) {
@@ -29,16 +29,6 @@ public class Check {
                 break;
             }
         }
-        return check;
-    }
-
-    public static int findUserId(List<MyUser> myUsers, long myUserId) {
-        int userId = 0;
-        for (int i = 0; i < myUsers.size(); i++) {
-            if (myUsers.get(i).getUserId() == myUserId) {
-                userId = i;
-            }
-        }
-        return userId;
+        return !check;
     }
 }
