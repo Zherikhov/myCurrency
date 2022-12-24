@@ -8,15 +8,32 @@ import okhttp3.Response;
 import ru.zherikhov.data.ApiLayerJson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class ApiLayerService {
     Gson gson = new Gson();
+    private List<String> apiKeys = new ArrayList<>();
+
+    {
+        apiKeys.add("HIsyujDCxps0P1k3phH9iehEIB9yy3XS"); //temp53453@gmail.com
+        apiKeys.add("A2IT8o9iwMEJggR2LB6R0Kt8aE6UyuQT"); //vladzherikhov@gmail.com
+        apiKeys.add("68Od7l7hEfhm549Cduo5dInvlG1y79l3"); //main mail
+        apiKeys.add("mv0Ycs5It2V2duyoQJCL3e8sQAJn61iU"); //temp53454@gmail.com
+        apiKeys.add("EB5Gf5brNYkdYGipBINifLFE7tWpEiAf"); //temp53455@gmail.com
+    }
 
     @SneakyThrows
     public String getLive(String source, String currencies) {
         String response = getResponse(source, currencies).body().string();
+
+        while (response.split(":")[0].equals("{\"message\"")) {
+            apiKeys.add(apiKeys.get(0));
+            apiKeys.remove(0);
+            response = getResponse(source, currencies).body().string();
+        }
+
         HashMap<String, String> currenciesCouple = new HashMap<>();
 
         ApiLayerJson apiLayerJson = gson.fromJson(response, ApiLayerJson.class);
@@ -46,6 +63,12 @@ public class ApiLayerService {
         allCurrencies.deleteCharAt(allCurrencies.length() - 1);
 
         String response = getResponse(source, allCurrencies.toString()).body().string();
+
+        while (response.split(":")[0].equals("{\"message\"")) {
+            apiKeys.add(apiKeys.get(0));
+            apiKeys.remove(0);
+            response = getResponse(source, allCurrencies.toString()).body().string();
+        }
         ApiLayerJson apiLayerJson = gson.fromJson(response, ApiLayerJson.class);
         String sourceCurrency = apiLayerJson.getSource();
 
@@ -64,18 +87,16 @@ public class ApiLayerService {
         Response response = null;
         Request request = new Request.Builder()
                 .url("https://api.apilayer.com/currency_data/live?source=" + source + "&currencies=" + currencies)
-                .addHeader("apikey", "HIsyujDCxps0P1k3phH9iehEIB9yy3XS")
-                //A2IT8o9iwMEJggR2LB6R0Kt8aE6UyuQT
-                //68Od7l7hEfhm549Cduo5dInvlG1y79l3
-                //HIsyujDCxps0P1k3phH9iehEIB9yy3XS
+                .addHeader("apikey", apiKeys.get(0))
                 .method("GET", null)
                 .build();
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            System.out.println("нет ответа от api.apilayer.com, или что-то еще...");
+            System.out.println("нет ответа от api.apilayer.com");
             e.printStackTrace();
         }
+
         return response;
     }
 }

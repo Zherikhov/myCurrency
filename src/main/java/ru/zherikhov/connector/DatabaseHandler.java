@@ -1,14 +1,13 @@
 package ru.zherikhov.connector;
 
 import lombok.SneakyThrows;
+import ru.zherikhov.utils.Date;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static ru.zherikhov.connector.Const.*;
 
@@ -36,6 +35,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, lastName);
 
         preparedStatement.executeUpdate();
+        System.out.println("newUser - " + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -45,17 +45,17 @@ public class DatabaseHandler extends Configs {
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
         resultSet = preparedStatement.executeQuery();
         return resultSet;
+
     }
 
     @SneakyThrows
-    public ResultSet getAllUsers() {
+    public ResultSet getAllSchedulers() {
         ResultSet resultSet;
-        String insert = "SELECT * FROM users";
+        String insert = "SELECT * FROM " + CURRENCY_FROM_USER;
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
         resultSet = preparedStatement.executeQuery();
         return resultSet;
     }
-
 
 
     @SneakyThrows
@@ -70,6 +70,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, hashMap.get(USD_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
+        System.out.println("setCurrenciesInDataBaseForUsd - >" + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -84,6 +85,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, hashMap.get(EUR_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
+        System.out.println("setCurrenciesInDataBaseForEur - >" + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -98,6 +100,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, hashMap.get(RUB_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
+        System.out.println("setCurrenciesInDataBaseForRub - >" + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -112,6 +115,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, hashMap.get(GEL_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
+        System.out.println("setCurrenciesInDataBaseForGel - >" + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -126,6 +130,7 @@ public class DatabaseHandler extends Configs {
         preparedStatement.setString(4, hashMap.get(ARS_USD.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
+        System.out.println("setCurrenciesInDataBaseForArs - >" + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -140,10 +145,24 @@ public class DatabaseHandler extends Configs {
     }
 
     @SneakyThrows
-    public void setCurrencyCouple(String couple, long idTelegram) {
-        String insert = "UPDATE " + USER_TABLE + " SET " + COUPLE + " = " + "'" + couple + "'" + " WHERE " + ID_TELEGRAM + " = " + idTelegram;
+    public void setDefaultRate(String couple, int rate, long idTelegram) {
+        String insert = "INSERT INTO " + CURRENCY_FROM_USER + " (" + ID_TELEGRAM + "," + COUPLE + "," + RATE + ") VALUES ("
+                + idTelegram + ",'" + couple + "'," + rate + ")";
 
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
         preparedStatement.executeUpdate();
+        System.out.println("setDefaultRate for " + idTelegram + " - " +Date.getSourceDate());
+    }
+
+    @SneakyThrows
+    public void setRate(String couple, float rate, long idTelegram) {
+        String insert = "UPDATE currency_from_user SET (couple, rate) = (?,?) WHERE id_telegram = ?;";
+
+        PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
+        preparedStatement.setString(1, couple);
+        preparedStatement.setFloat(2, rate);
+        preparedStatement.setLong(3, idTelegram);
+        preparedStatement.executeUpdate();
+        System.out.println("setRate for " + idTelegram + " - " +Date.getSourceDate());
     }
 }

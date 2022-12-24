@@ -3,12 +3,11 @@ package ru.zherikhov.schedule;
 import lombok.SneakyThrows;
 import ru.zherikhov.App;
 import ru.zherikhov.connector.DatabaseHandler;
-import ru.zherikhov.data.MyUser;
+import ru.zherikhov.data.CurrencyValue;
 import ru.zherikhov.service.SendMessageController;
+import ru.zherikhov.utils.Date;
 
 import java.sql.ResultSet;
-
-import static ru.zherikhov.App.myUsers;
 
 public class ScheduleCurrency implements Runnable {
     private final App bot;
@@ -18,28 +17,61 @@ public class ScheduleCurrency implements Runnable {
         this.bot = bot;
     }
 
-    //private List<MyUser> myUsers = new ArrayList<>();
     DatabaseHandler db = new DatabaseHandler();
 
     @SneakyThrows
     @Override
     public void run() {
-        ResultSet resultSet = db.getAllUsers();
+        ResultSet resultSet = db.getAllSchedulers();
+
         while (resultSet.next()) {
-            int id = resultSet.getInt(5);
-            String couple = resultSet.getString(7);
-            int coupleValue = resultSet.getInt(8);
+            int idTelegram = resultSet.getInt(2);
+            float rate = resultSet.getFloat(4);
+            String couple = resultSet.getString(3);
 
-            if (coupleValue >= 69) {
-                bot.execute(sendMessageController.createMessageFromVlad("Test"));
+            String firstPart = couple.substring(0, 3);
+            String secondPart = couple.substring(3, 6);
+            String value;
 
+            switch (firstPart) {
+                case "USD":
+                    value = CurrencyValue.UsdValues.get(couple);
+                    if (Float.parseFloat(value) <= rate) {
+                        bot.execute(sendMessageController.createMessageFromUser(idTelegram, "Цена за пару USD -> " + secondPart +
+                                "\nупала ниже установленной Вами суммы (<b>" + rate + "</b>), а именно - <b>" + value + "</b>"));
+                    }
+                    break;
+                case "EUR":
+                    value = CurrencyValue.EurValues.get(couple);
+                    if (Float.parseFloat(value) <= rate) {
+                        bot.execute(sendMessageController.createMessageFromUser(idTelegram, "Цена за пару EUR -> " + secondPart +
+                                "\nупала ниже установленной Вами суммы (<b>" + rate + "</b>), а именно - <b>" + value + "</b>"));
+                    }
+                    break;
+                case "RUB":
+                    value = CurrencyValue.RubValues.get(couple);
+                    if (Float.parseFloat(value) <= rate) {
+                        bot.execute(sendMessageController.createMessageFromUser(idTelegram, "Цена за пару RUB -> " + secondPart +
+                                "\nупала ниже установленной Вами суммы (<b>" + rate + "</b>), а именно - <b>" + value + "</b>"));
+                    }
+                    break;
+                case "GEL":
+                    value = CurrencyValue.GelValues.get(couple);
+                    if (Float.parseFloat(value) <= rate) {
+                        bot.execute(sendMessageController.createMessageFromUser(idTelegram, "Цена за пару GEL -> " + secondPart +
+                                "\nупала ниже установленной Вами суммы (<b>" + rate + "</b>), а именно - <b>" + value + "</b>"));
+                    }
+                    break;
+                case "ARS":
+                    value = CurrencyValue.ArsValues.get(couple);
+                    if (Float.parseFloat(value) <= rate) {
+                        bot.execute(sendMessageController.createMessageFromUser(idTelegram, "Цена за пару ARS -> " + secondPart +
+                                "\nупала ниже установленной Вами суммы (<b>" + rate + "</b>), а именно - <b>" + value + "</b>"));
+                    }
+                    break;
             }
-
-
-
         }
-
-
+        System.out.println("Расписание отработало в " + Date.getSourceDate());
     }
 }
 

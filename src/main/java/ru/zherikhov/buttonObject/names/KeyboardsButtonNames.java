@@ -9,7 +9,7 @@ public class KeyboardsButtonNames {
 
     {
         keyboardRowFirst.add("Узнать курс");
-        keyboardRowFirst.add("Назначить расписание");
+        keyboardRowFirst.add("Отслеживать курс");
     }
 
     private final List<String> keyboardRowSecond = new ArrayList<>();

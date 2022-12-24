@@ -11,6 +11,8 @@ import ru.zherikhov.buttonObject.names.InlineButtonsNames;
 import ru.zherikhov.connector.DatabaseHandler;
 import ru.zherikhov.data.CurrencyValue;
 import ru.zherikhov.data.MyUser;
+import ru.zherikhov.schedule.ParsingExchange;
+import ru.zherikhov.schedule.ScheduleCurrency;
 import ru.zherikhov.service.ApiLayerService;
 import ru.zherikhov.service.InlineKeyButtonService;
 import ru.zherikhov.service.SendMessageController;
@@ -23,6 +25,9 @@ import ru.zherikhov.utils.UserUtil;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Hello world!
@@ -48,12 +53,13 @@ public class App extends TelegramLongPollingBot {
             e.printStackTrace();
         }
 
-        //ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        //scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 7, TimeUnit.HOURS);
+//        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+//        scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 3, TimeUnit.HOURS);
+//
+//        ScheduledExecutorService scheduler2 = Executors.newSingleThreadScheduledExecutor();
+//        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 31, TimeUnit.MINUTES);
 
-        //ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        //scheduler.scheduleAtFixedRate(new ScheduleCurrency(bot), 0, 1, TimeUnit.MINUTES);
-        System.out.println("Загрузка выполнена!");
+        System.out.println("Загрузка выполнена в " + Date.getSourceDate());
     }
 
     @SneakyThrows
@@ -74,6 +80,7 @@ public class App extends TelegramLongPollingBot {
 
                     if (count == 0) {
                         db.newUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName());
+                        db.setDefaultRate("", 0, user.getId());
                         System.out.println("Пользователь добавлен в БД -> " + Logs.sendConsoleLog(update));
                     }
                     break;
@@ -93,14 +100,32 @@ public class App extends TelegramLongPollingBot {
         myCurrentUser = myUsers.get(UserUtil.findUserId(myUsers, currentUserId));
 
         //блок обработки - Обратная связь
-        if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.isWaitFeedback()) {
+        if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.isWaitFeedback() && !myCurrentUser.isWaitRate()) {
             execute(sendMessageController.createMessageFromVlad(update.getMessage().getText() + "\n\nСообщение от - " +
                     myCurrentUser.getUserId()));
             execute(sendMessageController.createMessage(update, "Сообщение доставлено, спасибо за обратную связь"));
             myCurrentUser.setWaitFeedback(false);
         }
 
-        //блок обработки - Узнать курс и Назначить расписание
+        //блок
+        if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.getRate() == 0.0 && myCurrentUser.isWaitRate()) {
+            String temp = update.getMessage().getText().replaceAll("[^\\d.,]", "");
+            temp = temp.replaceAll(",", ".");
+            myCurrentUser.setRate(Float.parseFloat(temp));
+        }
+        if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.getRate() != 0 && myCurrentUser.isWaitRate()) {
+            db.setRate(myCurrentUser.getCurrencyFrom() + myCurrentUser.getCurrencyTo(),
+                    myCurrentUser.getRate(), myCurrentUser.getUserId());
+            //System.out.println("Создано новое расписание -> " + Logs.sendConsoleLog(update));
+            execute(sendMessageController.createMessage(update, "Отслеживание курса настроено!"));
+
+            setNullFromCurrency(myCurrentUser);
+            myCurrentUser.setWaitSumForSchedule(false);
+            myCurrentUser.setWaitRate(false);
+            myCurrentUser.setRate(0);
+        }
+
+        //блок обработки - Узнать курс и Отслеживать курс
         if (update.hasCallbackQuery() && (myCurrentUser.isWaitCouple() || myCurrentUser.isWaitSumForSchedule())) {
             String[] userSelectedCurrencies = update.getCallbackQuery().getData().split(":");
 
@@ -163,11 +188,16 @@ public class App extends TelegramLongPollingBot {
             } else if (update.getCallbackQuery().getData().equals("Биржевой") && myCurrentUser.isWaitSumForSchedule()) {
                 System.out.println("Выбран Биржевой курс -> " + Logs.sendConsoleLog(update));
 
-                setNullFromCurrency(myCurrentUser);
-                myCurrentUser.setWaitSumForSchedule(false);
+                if (myCurrentUser.isWaitRate()) {
+                    //myCurrentUser.setRate(Integer.parseInt(update.getMessage().getText()));
+                    //execute(sendMessageController.createMessage(update, "Курс установлен"));
+                } else {
+                    execute(sendMessageController.editInlineMessage(update, "Укажите желаемый курс"));
+                    myCurrentUser.setWaitRate(true);
+                }
             }
 
-            if (myCurrentUser.getCurrencyFrom() != null && myCurrentUser.getCurrencyTo() != null) {
+            if (myCurrentUser.getCurrencyFrom() != null && myCurrentUser.getCurrencyTo() != null && !myCurrentUser.isWaitRate()) {
                 System.out.println("Выбрана пара валют -> " + Logs.sendConsoleLog(update));
 
                 execute(sendMessageController.editInlineMessage(update, myCurrentUser.getCurrencyFrom() +
@@ -190,8 +220,8 @@ public class App extends TelegramLongPollingBot {
                             update, "Выберите пару:", new InlineButtonsNames().currency));
                     myCurrentUser.setWaitCouple(true);
                     break;
-                case "Назначить расписание":
-                    System.out.println("Назначить расписание -> " + Logs.sendConsoleLog(update));
+                case "Отслеживать курс":
+                    System.out.println("Отслеживать курс -> " + Logs.sendConsoleLog(update));
                     execute(inlineKeyButtonService.setInlineButtonDouble(
                             update, "Выберите пару:", new InlineButtonsNames().currency));
                     myCurrentUser.setWaitSumForSchedule(true);

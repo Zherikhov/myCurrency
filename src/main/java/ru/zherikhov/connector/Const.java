@@ -2,6 +2,7 @@ package ru.zherikhov.connector;
 
 public class Const {
     public static final String USER_TABLE = "users";
+    public static final String CURRENCY_FROM_USER = "currency_from_user";
     public static final String CURRENCY_USD_TABLE = "currency_usd";
     public static final String CURRENCY_EUR_TABLE = "currency_eur";
     public static final String CURRENCY_RUB_TABLE = "currency_rub";
@@ -14,7 +15,7 @@ public class Const {
     public static final String LAST_NAME = "last_name";
     public static final String STATUS = "status";
     public static final String COUPLE = "couple";
-    public static final String COUPLE_VALUE = "couple_value";
+    public static final String RATE = "rate";
 
     public static final String USD_EUR = "usd_eur";
     public static final String USD_RUB = "usd_rub";

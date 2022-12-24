@@ -26,8 +26,7 @@ public class SendMessageController {
         editMessageText.setChatId(chatId);
         editMessageText.setMessageId(messageId);
         editMessageText.setText(text);
-        //editMessageText.setText("`" + text + "`");
-        //editMessageText.setParseMode(ParseMode.MARKDOWN);
+        editMessageText.setParseMode(ParseMode.HTML);
         return editMessageText;
     }
 
@@ -35,6 +34,14 @@ public class SendMessageController {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(691103949L);
         sendMessage.setText("<b>" + text + "</b>");
+        sendMessage.setParseMode(ParseMode.HTML);
+        return sendMessage;
+    }
+
+    public SendMessage createMessageFromUser(long telegramId, String text) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(telegramId);
+        sendMessage.setText(text);
         sendMessage.setParseMode(ParseMode.HTML);
         return sendMessage;
     }
