@@ -24,14 +24,25 @@ public class ApiLayerService {
         apiKeys.add("EB5Gf5brNYkdYGipBINifLFE7tWpEiAf"); //temp53455@gmail.com
     }
 
-    @SneakyThrows
     public String getLive(String source, String currencies) {
-        String response = getResponse(source, currencies).body().string();
+        String response = null;
+        try {
+            response = getResponse(source, currencies).body().string();
+        } catch (IOException e) {
+            System.out.println(("Хз]1"));
+            e.printStackTrace();
+        }
 
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
-            response = getResponse(source, currencies).body().string();
+            System.out.println("apiKey заменен с " + apiKeys.get(apiKeys.size() - 1) + " на " + apiKeys.get(0));
+            try {
+                response = getResponse(source, currencies).body().string();
+            } catch (IOException e) {
+                System.out.println(("Хз]2"));
+                e.printStackTrace();
+            }
         }
 
         HashMap<String, String> currenciesCouple = new HashMap<>();
@@ -50,7 +61,6 @@ public class ApiLayerService {
      * @param source     исходная валюта
      * @return возвращает HashMap где ключ - пара из валют для конвертации, а значение - курс этой пары
      */
-    @SneakyThrows
     public HashMap<String, String> getLiveAll(List<String> currencies, String source) {
         HashMap<String, String> currenciesCouple = new HashMap<>();
 
@@ -62,12 +72,23 @@ public class ApiLayerService {
         }
         allCurrencies.deleteCharAt(allCurrencies.length() - 1);
 
-        String response = getResponse(source, allCurrencies.toString()).body().string();
+        String response = null;
+        try {
+            response = getResponse(source, allCurrencies.toString()).body().string();
+        } catch (IOException e) {
+            System.out.println(("Хз]3"));
+            e.printStackTrace();
+        }
 
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
-            response = getResponse(source, allCurrencies.toString()).body().string();
+            try {
+                response = getResponse(source, allCurrencies.toString()).body().string();
+            } catch (IOException e) {
+                System.out.println(("Хз]4"));
+                e.printStackTrace();
+            }
         }
         ApiLayerJson apiLayerJson = gson.fromJson(response, ApiLayerJson.class);
         String sourceCurrency = apiLayerJson.getSource();

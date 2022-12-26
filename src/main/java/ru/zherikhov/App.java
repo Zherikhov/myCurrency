@@ -1,6 +1,8 @@
 package ru.zherikhov;
 
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -41,7 +43,7 @@ public class App extends TelegramLongPollingBot {
     private final SendMessageController sendMessageController = new SendMessageController();
     private final ApiLayerService apiLayerService = new ApiLayerService();
     long currentUserId = 0;
-
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         App bot = new App();
@@ -53,11 +55,11 @@ public class App extends TelegramLongPollingBot {
             e.printStackTrace();
         }
 
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 3, TimeUnit.HOURS);
+        //ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        //scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 3, TimeUnit.HOURS);
 
-        ScheduledExecutorService scheduler2 = Executors.newSingleThreadScheduledExecutor();
-        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 31, TimeUnit.MINUTES);
+        //ScheduledExecutorService scheduler2 = Executors.newSingleThreadScheduledExecutor();
+        //scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 31, TimeUnit.MINUTES);
 
         System.out.println("Загрузка выполнена в " + Date.getSourceDate());
     }
@@ -137,6 +139,7 @@ public class App extends TelegramLongPollingBot {
 
             if (update.getCallbackQuery().getData().equals("Биржевой (live)") && myCurrentUser.isWaitCouple()) {
                 System.out.println("Выбран Биржевой (live) курс -> " + Logs.sendConsoleLog(update));
+                logger.info("logger");
 
                 User user = update.getCallbackQuery().getFrom();
                 ResultSet resultSet = db.findUser(user.getId());

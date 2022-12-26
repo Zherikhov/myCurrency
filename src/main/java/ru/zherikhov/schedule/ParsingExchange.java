@@ -71,5 +71,6 @@ public class ParsingExchange implements Runnable {
                 ArsValues.put("ARSUSD", resultSet.getString(5));
             }
         }
+        System.out.println("ParsingExchange.run() " + Date.getSourceDate());
     }
 }
