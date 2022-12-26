@@ -25,6 +25,7 @@ public class ApiLayerService {
     }
 
     public String getLive(String source, String currencies) {
+        System.out.println("getLive");
         String response = null;
         try {
             response = getResponse(source, currencies).body().string();
@@ -62,6 +63,7 @@ public class ApiLayerService {
      * @return возвращает HashMap где ключ - пара из валют для конвертации, а значение - курс этой пары
      */
     public HashMap<String, String> getLiveAll(List<String> currencies, String source) {
+        System.out.println("getLiveAll");
         HashMap<String, String> currenciesCouple = new HashMap<>();
 
         //формируем String currencies для запроса всех курсов для одной валюты
