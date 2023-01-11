@@ -85,6 +85,7 @@ public class ApiLayerService {
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
+            System.out.println("apiKey заменен с " + apiKeys.get(apiKeys.size() - 1) + " на " + apiKeys.get(0));
             try {
                 response = getResponse(source, allCurrencies.toString()).body().string();
             } catch (IOException e) {
