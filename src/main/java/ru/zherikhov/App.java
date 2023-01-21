@@ -59,7 +59,7 @@ public class App extends TelegramLongPollingBot {
         scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 3, TimeUnit.HOURS);
 
         ScheduledExecutorService scheduler2 = Executors.newSingleThreadScheduledExecutor();
-        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 31, TimeUnit.MINUTES);
+        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 61, TimeUnit.MINUTES);
 
         System.out.println("Загрузка выполнена в " + Date.getSourceDate());
     }
