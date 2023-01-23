@@ -21,11 +21,9 @@ import ru.zherikhov.service.SendMessageController;
 import ru.zherikhov.service.StartCommand;
 import ru.zherikhov.utils.*;
 
-import java.io.FileInputStream;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -253,11 +251,11 @@ public class App extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return MyProperties.getProperties("config.properties", "telegram.userName");
+        return PropertyUtil.getProperties("config.properties", "telegram.userName");
     }
 
     @Override
     public String getBotToken() {
-        return MyProperties.getProperties("config.properties", "telegram.token");
+        return PropertyUtil.getProperties("config.properties", "telegram.token");
     }
 }
