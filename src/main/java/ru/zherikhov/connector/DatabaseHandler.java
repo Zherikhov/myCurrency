@@ -2,6 +2,7 @@ package ru.zherikhov.connector;
 
 import lombok.SneakyThrows;
 import ru.zherikhov.utils.Date;
+import ru.zherikhov.utils.MyProperties;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,11 +12,15 @@ import java.util.HashMap;
 
 import static ru.zherikhov.connector.Const.*;
 
-public class DatabaseHandler extends Configs {
+public class DatabaseHandler {
     Connection dbConnection;
 
     @SneakyThrows
     public Connection getDbConnection() {
+        String dbName = MyProperties.getProperties("config.properties", "db.name");
+        String dbUser = MyProperties.getProperties("config.properties", "db.user");
+        String dbPass = MyProperties.getProperties("config.properties", "db.password");
+
         String connectionUrl = "jdbc:postgresql://localhost:5432/" + dbName;
         Class.forName("org.postgresql.Driver").getDeclaredConstructor().newInstance();
 

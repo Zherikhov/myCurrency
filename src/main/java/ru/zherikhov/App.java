@@ -19,14 +19,13 @@ import ru.zherikhov.service.ApiLayerService;
 import ru.zherikhov.service.InlineKeyButtonService;
 import ru.zherikhov.service.SendMessageController;
 import ru.zherikhov.service.StartCommand;
-import ru.zherikhov.utils.Check;
-import ru.zherikhov.utils.Date;
-import ru.zherikhov.utils.Logs;
-import ru.zherikhov.utils.UserUtil;
+import ru.zherikhov.utils.*;
 
+import java.io.FileInputStream;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +43,7 @@ public class App extends TelegramLongPollingBot {
     private final ApiLayerService apiLayerService = new ApiLayerService();
     long currentUserId = 0;
     private static final Logger logger = LoggerFactory.getLogger(App.class);
+
 
     public static void main(String[] args) {
         App bot = new App();
@@ -253,11 +253,11 @@ public class App extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "@zherikhov_currency_bot";
+        return MyProperties.getProperties("config.properties", "telegram.userName");
     }
 
     @Override
     public String getBotToken() {
-        return "5648874987:AAEeXQfDrN2SHH_Eirmh2tBo2Qs_q26Rsuc";
+        return MyProperties.getProperties("config.properties", "telegram.token");
     }
 }
