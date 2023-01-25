@@ -1,6 +1,7 @@
 package ru.zherikhov.connector;
 
 import lombok.SneakyThrows;
+import ru.zherikhov.App;
 import ru.zherikhov.utils.Date;
 import ru.zherikhov.utils.PropertyUtil;
 
@@ -17,9 +18,9 @@ public class DatabaseHandler {
 
     @SneakyThrows
     public Connection getDbConnection() {
-        String dbName = PropertyUtil.getProperties("config.properties", "db.name");
-        String dbUser = PropertyUtil.getProperties("config.properties", "db.user");
-        String dbPass = PropertyUtil.getProperties("config.properties", "db.password");
+        String dbName = PropertyUtil.getProperties("D:\\Projects\\myCurrency\\src\\main\\resources\\config.properties", "db.name");
+        String dbUser = PropertyUtil.getProperties("D:\\Projects\\myCurrency\\src\\main\\resources\\config.properties", "db.user");
+        String dbPass = PropertyUtil.getProperties("D:\\Projects\\myCurrency\\src\\main\\resources\\config.properties", "db.password");
 
         String connectionUrl = "jdbc:postgresql://localhost:5432/" + dbName;
         Class.forName("org.postgresql.Driver").getDeclaredConstructor().newInstance();
@@ -40,7 +41,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, lastName);
 
         preparedStatement.executeUpdate();
-        System.out.println("newUser - " + Date.getSourceDate());
+        App.LOGGER.info("ADDED new user " + idTelegram);
     }
 
     @SneakyThrows
@@ -75,7 +76,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, hashMap.get(USD_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
-        System.out.println("setCurrenciesInDataBaseForUsd - >" + Date.getSourceDate());
+        App.LOGGER.info("Added a value in DB for USD");
     }
 
     @SneakyThrows
@@ -90,7 +91,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, hashMap.get(EUR_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
-        System.out.println("setCurrenciesInDataBaseForEur - >" + Date.getSourceDate());
+        App.LOGGER.info("Added a value in DB for EUR");
     }
 
     @SneakyThrows
@@ -105,7 +106,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, hashMap.get(RUB_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
-        System.out.println("setCurrenciesInDataBaseForRub - >" + Date.getSourceDate());
+        App.LOGGER.info("Added a value in DB for RUB");
     }
 
     @SneakyThrows
@@ -120,7 +121,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, hashMap.get(GEL_ARS.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
-        System.out.println("setCurrenciesInDataBaseForGel - >" + Date.getSourceDate());
+        App.LOGGER.info("Added a value in DB for GEL");
     }
 
     @SneakyThrows
@@ -135,7 +136,7 @@ public class DatabaseHandler {
         preparedStatement.setString(4, hashMap.get(ARS_USD.toUpperCase().replaceAll("_", "")));
 
         preparedStatement.executeUpdate();
-        System.out.println("setCurrenciesInDataBaseForArs - >" + Date.getSourceDate());
+        App.LOGGER.info("Added a value in DB for ARS");
     }
 
     @SneakyThrows
@@ -156,7 +157,7 @@ public class DatabaseHandler {
 
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
         preparedStatement.executeUpdate();
-        System.out.println("setDefaultRate for " + idTelegram + " - " +Date.getSourceDate());
+        App.LOGGER.info("Set default rate for " + idTelegram);
     }
 
     @SneakyThrows
@@ -168,6 +169,6 @@ public class DatabaseHandler {
         preparedStatement.setFloat(2, rate);
         preparedStatement.setLong(3, idTelegram);
         preparedStatement.executeUpdate();
-        System.out.println("setRate for " + idTelegram + " - " +Date.getSourceDate());
+        App.LOGGER.info("Set rate for " + idTelegram);
     }
 }

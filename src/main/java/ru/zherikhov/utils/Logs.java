@@ -11,7 +11,6 @@ public class Logs {
         } else {
             user = update.getMessage().getFrom();
         }
-        return user.getId() + ", " + user.getUserName() + ", " + user.getFirstName() + ", " + user.getLastName()
-                + ", " + Date.getSourceDate();
+        return user.getId() + ", " + user.getUserName() + ", " + user.getFirstName() + ", " + user.getLastName();
     }
 }

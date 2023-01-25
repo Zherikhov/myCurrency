@@ -1,6 +1,5 @@
 package ru.zherikhov;
 
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -22,6 +21,7 @@ import ru.zherikhov.service.StartCommand;
 import ru.zherikhov.utils.*;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -40,7 +40,7 @@ public class App extends TelegramLongPollingBot {
     private final SendMessageController sendMessageController = new SendMessageController();
     private final ApiLayerService apiLayerService = new ApiLayerService();
     long currentUserId = 0;
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
 
     public static void main(String[] args) {
@@ -62,26 +62,36 @@ public class App extends TelegramLongPollingBot {
         System.out.println("Загрузка выполнена в " + Date.getSourceDate());
     }
 
-    @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
         String command = Check.checkCommand(update.getMessage());
         if (command != null) {
             switch (command) {
                 case "/start":
-                    execute(startCommand.start(update));
+                    try {
+                        execute(startCommand.start(update));
+                    } catch (TelegramApiException e) {
+                        LOGGER.error("TelegramApiException", e);
+                        e.printStackTrace();
+                    }
                     User user = update.getMessage().getFrom();
                     ResultSet resultSet = db.findUser(user.getId());
 
                     int count = 0;
-                    while (resultSet.next()) {
+                    while (true) {
+                        try {
+                            if (!resultSet.next()) break;
+                        } catch (SQLException e) {
+                            LOGGER.error("SQLException", e);
+                            e.printStackTrace();
+                        }
                         count++;
                     }
 
                     if (count == 0) {
                         db.newUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName());
                         db.setDefaultRate("", 0, user.getId());
-                        System.out.println("Пользователь добавлен в БД -> " + Logs.sendConsoleLog(update));
+                        LOGGER.info("User added in BD -> " + Logs.sendConsoleLog(update));
                     }
                     break;
             }
@@ -101,10 +111,15 @@ public class App extends TelegramLongPollingBot {
 
         //блок обработки - Обратная связь
         if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.isWaitFeedback() && !myCurrentUser.isWaitRate()) {
-            execute(sendMessageController.createMessageFromVlad(update.getMessage().getText() + "\n\nСообщение от - " +
-                    myCurrentUser.getUserId()));
-            execute(sendMessageController.createMessage(update, "Сообщение доставлено, спасибо за обратную связь"));
-            myCurrentUser.setWaitFeedback(false);
+            try {
+                execute(sendMessageController.createMessageFromVlad(update.getMessage().getText() + "\n\nСообщение от - " +
+                        myCurrentUser.getUserId()));
+                execute(sendMessageController.createMessage(update, "Сообщение доставлено, спасибо за обратную связь"));
+                myCurrentUser.setWaitFeedback(false);
+            } catch (TelegramApiException e) {
+                LOGGER.error("TelegramApiException", e);
+                e.printStackTrace();
+            }
         }
 
         //блок
@@ -116,8 +131,12 @@ public class App extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText() && myCurrentUser.getRate() != 0 && myCurrentUser.isWaitRate()) {
             db.setRate(myCurrentUser.getCurrencyFrom() + myCurrentUser.getCurrencyTo(),
                     myCurrentUser.getRate(), myCurrentUser.getUserId());
-            //System.out.println("Создано новое расписание -> " + Logs.sendConsoleLog(update));
-            execute(sendMessageController.createMessage(update, "Отслеживание курса настроено!"));
+            try {
+                execute(sendMessageController.createMessage(update, "Отслеживание курса настроено!"));
+            } catch (TelegramApiException e) {
+                LOGGER.error("TelegramApiException", e);
+                e.printStackTrace();
+            }
 
             setNullFromCurrency(myCurrentUser);
             myCurrentUser.setWaitSumForSchedule(false);
@@ -136,77 +155,96 @@ public class App extends TelegramLongPollingBot {
             }
 
             if (update.getCallbackQuery().getData().equals("Биржевой (live)") && myCurrentUser.isWaitCouple()) {
-                System.out.println("Выбран Биржевой (live) курс -> " + Logs.sendConsoleLog(update));
-                logger.info("logger");
+                LOGGER.info("Used exchange (live) -> " + Logs.sendConsoleLog(update));
 
                 User user = update.getCallbackQuery().getFrom();
                 ResultSet resultSet = db.findUser(user.getId());
                 int id = -1;
-                while (resultSet.next()) {
-                    id = resultSet.getInt(6);
-                }
-                if (id == 1) {
-                    execute(sendMessageController.editInlineMessage(update, "Информация на (время Московское): " + Date.getSourceDate() + "\n" +
-                            apiLayerService.getLive(myCurrentUser.getCurrencyFrom(), myCurrentUser.getCurrencyTo())));
-                } else {
-                    execute(sendMessageController.editInlineMessage(update, "У вас нет подписки, что бы воспользоваться функцией"));
+                try {
+                    while (resultSet.next()) {
+                        id = resultSet.getInt(6);
+                    }
+
+                    if (id == 1) {
+                        execute(sendMessageController.editInlineMessage(update, "Информация на (время Московское): " + Date.getSourceDate() + "\n" +
+                                apiLayerService.getLive(myCurrentUser.getCurrencyFrom(), myCurrentUser.getCurrencyTo())));
+                    } else {
+                        execute(sendMessageController.editInlineMessage(update, "У вас нет подписки, что бы воспользоваться функцией"));
+                    }
+                } catch (TelegramApiException | SQLException e) {
+                    LOGGER.error("TelegramApiException/SQLException", e);
+                    e.printStackTrace();
                 }
 
                 myCurrentUser.setWaitCouple(false);
                 setNullFromCurrency(myCurrentUser);
             } else if (update.getCallbackQuery().getData().equals("Биржевой") && myCurrentUser.isWaitCouple()) {
-                System.out.println("Выбран Биржевой курс -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Used exchange -> " + Logs.sendConsoleLog(update));
 
-                switch (myCurrentUser.getCurrencyFrom()) {
-                    case "USD":
-                        execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): " +
-                                Date.getSourceDate() + "\n" + CurrencyValue.UsdValues.get(myCurrentUser.getCurrencyFrom() +
-                                myCurrentUser.getCurrencyTo())));
-                        break;
-                    case "EUR":
-                        execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
-                                + Date.getSourceDate() + "\n" + CurrencyValue.EurValues.get(myCurrentUser.getCurrencyFrom() +
-                                myCurrentUser.getCurrencyTo())));
-                        break;
-                    case "RUB":
-                        execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
-                                + Date.getSourceDate() + "\n" + CurrencyValue.RubValues.get(myCurrentUser.getCurrencyFrom() +
-                                myCurrentUser.getCurrencyTo())));
-                        break;
-                    case "GEL":
-                        execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
-                                + Date.getSourceDate() + "\n" + CurrencyValue.GelValues.get(myCurrentUser.getCurrencyFrom() +
-                                myCurrentUser.getCurrencyTo())));
-                        break;
-                    case "ARS":
-                        execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
-                                + Date.getSourceDate() + "\n" + CurrencyValue.ArsValues.get(myCurrentUser.getCurrencyFrom() +
-                                myCurrentUser.getCurrencyTo())));
-                        break;
+                try {
+                    switch (myCurrentUser.getCurrencyFrom()) {
+                        case "USD":
+                            execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): " +
+                                    Date.getSourceDate() + "\n" + CurrencyValue.UsdValues.get(myCurrentUser.getCurrencyFrom() +
+                                    myCurrentUser.getCurrencyTo())));
+                            break;
+                        case "EUR":
+                            execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
+                                    + Date.getSourceDate() + "\n" + CurrencyValue.EurValues.get(myCurrentUser.getCurrencyFrom() +
+                                    myCurrentUser.getCurrencyTo())));
+                            break;
+                        case "RUB":
+                            execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
+                                    + Date.getSourceDate() + "\n" + CurrencyValue.RubValues.get(myCurrentUser.getCurrencyFrom() +
+                                    myCurrentUser.getCurrencyTo())));
+                            break;
+                        case "GEL":
+                            execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
+                                    + Date.getSourceDate() + "\n" + CurrencyValue.GelValues.get(myCurrentUser.getCurrencyFrom() +
+                                    myCurrentUser.getCurrencyTo())));
+                            break;
+                        case "ARS":
+                            execute(sendMessageController.editInlineMessage(update, "Информация за (время Московское): "
+                                    + Date.getSourceDate() + "\n" + CurrencyValue.ArsValues.get(myCurrentUser.getCurrencyFrom() +
+                                    myCurrentUser.getCurrencyTo())));
+                            break;
+                    }
+                } catch (TelegramApiException e) {
+                    LOGGER.error("TelegramApiException", e);
+                    e.printStackTrace();
                 }
                 setNullFromCurrency(myCurrentUser);
                 myCurrentUser.setWaitCouple(false);
             } else if (update.getCallbackQuery().getData().equals("Биржевой") && myCurrentUser.isWaitSumForSchedule()) {
-                System.out.println("Выбран Биржевой курс -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Used exchange (live) -> " + Logs.sendConsoleLog(update));
 
                 if (myCurrentUser.isWaitRate()) {
-                    //myCurrentUser.setRate(Integer.parseInt(update.getMessage().getText()));
-                    //execute(sendMessageController.createMessage(update, "Курс установлен"));
+
                 } else {
-                    execute(sendMessageController.editInlineMessage(update, "Укажите желаемый курс"));
+                    try {
+                        execute(sendMessageController.editInlineMessage(update, "Укажите желаемый курс"));
+                    } catch (TelegramApiException e) {
+                        LOGGER.error("TelegramApiException", e);
+                        e.printStackTrace();
+                    }
                     myCurrentUser.setWaitRate(true);
                 }
             }
 
             if (myCurrentUser.getCurrencyFrom() != null && myCurrentUser.getCurrencyTo() != null && !myCurrentUser.isWaitRate()) {
-                System.out.println("Выбрана пара валют -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Used exchange -> " + Logs.sendConsoleLog(update));
 
-                execute(sendMessageController.editInlineMessage(update, myCurrentUser.getCurrencyFrom() +
-                        "\n            ->\n                    " + myCurrentUser.getCurrencyTo()));
-                if (myCurrentUser.isWaitSumForSchedule()) {
-                    execute(inlineKeyButtonService.setInlineButtonInLine(update, "Выберите курс", new InlineButtonsNames().InlineRowsOfSchedule));
-                } else if (myCurrentUser.isWaitCouple()) {
-                    execute(inlineKeyButtonService.setInlineButtonInLine(update, "Выберите курс", new InlineButtonsNames().InlineRows));
+                try {
+                    execute(sendMessageController.editInlineMessage(update, myCurrentUser.getCurrencyFrom() +
+                            "\n             ->\n                    " + myCurrentUser.getCurrencyTo()));
+                    if (myCurrentUser.isWaitSumForSchedule()) {
+                        execute(inlineKeyButtonService.setInlineButtonInLine(update, "Выберите курс", new InlineButtonsNames().InlineRowsOfSchedule));
+                    } else if (myCurrentUser.isWaitCouple()) {
+                        execute(inlineKeyButtonService.setInlineButtonInLine(update, "Выберите курс", new InlineButtonsNames().InlineRows));
+                    }
+                } catch (TelegramApiException e) {
+                    LOGGER.error("TelegramApiException", e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -214,25 +252,30 @@ public class App extends TelegramLongPollingBot {
         //блок if для запуска логики с KeyboardButton и установки тригера "wait"
         if (update.hasMessage() && update.getMessage().hasText()) {
 
-            switch (update.getMessage().getText()) {
-                case "Узнать курс":
-                    System.out.println("Узнать курс -> " + Logs.sendConsoleLog(update));
-                    execute(inlineKeyButtonService.setInlineButtonDouble(
-                            update, "Выберите пару:", new InlineButtonsNames().currency));
-                    myCurrentUser.setWaitCouple(true);
-                    break;
-                case "Отслеживать курс":
-                    System.out.println("Отслеживать курс -> " + Logs.sendConsoleLog(update));
-                    execute(inlineKeyButtonService.setInlineButtonDouble(
-                            update, "Выберите пару:", new InlineButtonsNames().currency));
-                    myCurrentUser.setWaitSumForSchedule(true);
-                    break;
-                case "Обратная связь":
-                    System.out.println("Хотят оставить обратную связь -> " + Logs.sendConsoleLog(update));
-                    execute(sendMessageController.createMessage(update, "Следующее сообщение будет отправлено автору бота,\n" +
-                            "Но помни - <i>художника обидеть может каждый, не каждый может выйти из бана!</i>"));
-                    myCurrentUser.setWaitFeedback(true);
-                    break;
+            try {
+                switch (update.getMessage().getText()) {
+                    case "Узнать курс":
+                        LOGGER.info("Узнать курс -> " + Logs.sendConsoleLog(update));
+                        execute(inlineKeyButtonService.setInlineButtonDouble(
+                                update, "Выберите пару:", new InlineButtonsNames().currency));
+                        myCurrentUser.setWaitCouple(true);
+                        break;
+                    case "Отслеживать курс":
+                        LOGGER.info("Отслеживать курс -> " + Logs.sendConsoleLog(update));
+                        execute(inlineKeyButtonService.setInlineButtonDouble(
+                                update, "Выберите пару:", new InlineButtonsNames().currency));
+                        myCurrentUser.setWaitSumForSchedule(true);
+                        break;
+                    case "Обратная связь":
+                        LOGGER.info("Обратная связь -> " + Logs.sendConsoleLog(update));
+                        execute(sendMessageController.createMessage(update, "Следующее сообщение будет отправлено автору бота,\n" +
+                                "Но помни - <i>художника обидеть может каждый, не каждый может выйти из бана :)</i>"));
+                        myCurrentUser.setWaitFeedback(true);
+                        break;
+                }
+            } catch (TelegramApiException e) {
+                LOGGER.error("TelegramApiException", e);
+                e.printStackTrace();
             }
         }
     }
@@ -246,16 +289,16 @@ public class App extends TelegramLongPollingBot {
         User user = update.getMessage().getFrom();
         MyUser myUser = new MyUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName());
         myUsers.add(myUser);
-        System.out.println("Пользователь добавлен в лист myUsers -> " + Logs.sendConsoleLog(update));
+        LOGGER.info("Пользователь добавлен в лист myUsers -> " + Logs.sendConsoleLog(update));
     }
 
     @Override
     public String getBotUsername() {
-        return PropertyUtil.getProperties("config.properties", "telegram.userName");
+        return PropertyUtil.getProperties("D:\\Projects\\myCurrency\\src\\main\\resources\\config.properties", "telegram.userName");
     }
 
     @Override
     public String getBotToken() {
-        return PropertyUtil.getProperties("config.properties", "telegram.token");
+        return PropertyUtil.getProperties("D:\\Projects\\myCurrency\\src\\main\\resources\\config.properties", "telegram.token");
     }
 }

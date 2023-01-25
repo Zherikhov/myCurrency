@@ -1,6 +1,7 @@
 package ru.zherikhov.schedule;
 
 import lombok.SneakyThrows;
+import ru.zherikhov.App;
 import ru.zherikhov.buttonObject.names.InlineButtonsNames;
 import ru.zherikhov.connector.Const;
 import ru.zherikhov.connector.DatabaseHandler;
@@ -71,6 +72,6 @@ public class ParsingExchange implements Runnable {
                 ArsValues.put("ARSUSD", resultSet.getString(5));
             }
         }
-        System.out.println("ParsingExchange.run() " + Date.getSourceDate());
+        App.LOGGER.info("ParsingExchange completed");
     }
 }

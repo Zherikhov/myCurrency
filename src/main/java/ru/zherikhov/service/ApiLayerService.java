@@ -1,10 +1,10 @@
 package ru.zherikhov.service;
 
 import com.google.gson.Gson;
-import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import ru.zherikhov.App;
 import ru.zherikhov.data.ApiLayerJson;
 
 import java.io.IOException;
@@ -25,23 +25,22 @@ public class ApiLayerService {
     }
 
     public String getLive(String source, String currencies) {
-        System.out.println("getLive");
         String response = null;
         try {
             response = getResponse(source, currencies).body().string();
         } catch (IOException e) {
-            System.out.println(("Хз]1"));
+            App.LOGGER.error("getLiveException", e);
             e.printStackTrace();
         }
 
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
-            System.out.println("apiKey заменен с " + apiKeys.get(apiKeys.size() - 1) + " на " + apiKeys.get(0));
+            App.LOGGER.info("apiKey changed FROM " + apiKeys.get(apiKeys.size() - 1) + " TO " + apiKeys.get(0));
             try {
                 response = getResponse(source, currencies).body().string();
             } catch (IOException e) {
-                System.out.println(("Хз]2"));
+                App.LOGGER.error("getLiveException", e);
                 e.printStackTrace();
             }
         }
@@ -54,6 +53,7 @@ public class ApiLayerService {
         String temp = sourceCurrency + currencies;
         currenciesCouple.put(temp, apiLayerJson.getQuotes().get(temp).toString());
 
+        App.LOGGER.info("ApiLayerService completed method getLive");
         return "Итог: " + currenciesCouple.get(temp);
     }
 
@@ -63,7 +63,6 @@ public class ApiLayerService {
      * @return возвращает HashMap где ключ - пара из валют для конвертации, а значение - курс этой пары
      */
     public HashMap<String, String> getLiveAll(List<String> currencies, String source) {
-        System.out.println("getLiveAll");
         HashMap<String, String> currenciesCouple = new HashMap<>();
 
         //формируем String currencies для запроса всех курсов для одной валюты
@@ -78,18 +77,18 @@ public class ApiLayerService {
         try {
             response = getResponse(source, allCurrencies.toString()).body().string();
         } catch (IOException e) {
-            System.out.println(("Хз]3"));
+            App.LOGGER.error("getLiveAllException", e);
             e.printStackTrace();
         }
 
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
-            System.out.println("apiKey заменен с " + apiKeys.get(apiKeys.size() - 1) + " на " + apiKeys.get(0));
+            App.LOGGER.info("apiKey changed FROM " + apiKeys.get(apiKeys.size() - 1) + " TO " + apiKeys.get(0));
             try {
                 response = getResponse(source, allCurrencies.toString()).body().string();
             } catch (IOException e) {
-                System.out.println(("Хз]4"));
+                App.LOGGER.error("getLiveAllException", e);
                 e.printStackTrace();
             }
         }
@@ -102,7 +101,6 @@ public class ApiLayerService {
                 currenciesCouple.put(temp, apiLayerJson.getQuotes().get(temp).toString());
             }
         }
-
         return currenciesCouple;
     }
 
@@ -117,7 +115,7 @@ public class ApiLayerService {
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            System.out.println("нет ответа от api.apilayer.com");
+            App.LOGGER.error("api.apilayer.com - not answer");
             e.printStackTrace();
         }
 
