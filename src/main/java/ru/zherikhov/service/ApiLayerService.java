@@ -36,7 +36,7 @@ public class ApiLayerService {
         while (response.split(":")[0].equals("{\"message\"")) {
             apiKeys.add(apiKeys.get(0));
             apiKeys.remove(0);
-            App.LOGGER.info("apiKey changed FROM " + apiKeys.get(apiKeys.size() - 1) + " TO " + apiKeys.get(0));
+            App.LOGGER.warn("apiKey changed FROM " + apiKeys.get(apiKeys.size() - 1) + " TO " + apiKeys.get(0));
             try {
                 response = getResponse(source, currencies).body().string();
             } catch (IOException e) {

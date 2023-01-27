@@ -27,9 +27,9 @@ public class ScheduleCurrency implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.info("Schedule have STARTED for send a message");
         try {
             if (Date.compareTime("22:00:00") > 0 && Date.compareTime("07:00:00") < 0) {
+                LOGGER.info("Schedule have STARTED for send a message");
                 ResultSet resultSet = db.getAllSchedulers();
 
                 while (resultSet.next()) {
@@ -87,6 +87,8 @@ public class ScheduleCurrency implements Runnable {
                     }
                 }
                 LOGGER.info("Schedule finished for send message");
+            } else {
+                App.LOGGER.info("Sleeping...");
             }
         } catch (ParseException | SQLException | TelegramApiException e) {
             LOGGER.error("Schedule NOT finished correct for send a message", e);

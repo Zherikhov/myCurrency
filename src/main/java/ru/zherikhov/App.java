@@ -91,7 +91,7 @@ public class App extends TelegramLongPollingBot {
                     if (count == 0) {
                         db.newUser(user.getId(), user.getUserName(), user.getFirstName(), user.getLastName());
                         db.setDefaultRate("", 0, user.getId());
-                        LOGGER.info("User added in BD -> " + Logs.sendConsoleLog(update));
+                        LOGGER.info("User added in BD => " + Logs.sendConsoleLog(update));
                     }
                     break;
             }
@@ -114,6 +114,7 @@ public class App extends TelegramLongPollingBot {
             try {
                 execute(sendMessageController.createMessageFromVlad(update.getMessage().getText() + "\n\nСообщение от - " +
                         myCurrentUser.getUserId()));
+                LOGGER.info("Message -> {} FROM {}", update.getMessage().getText(), myCurrentUser.getUserId());
                 execute(sendMessageController.createMessage(update, "Сообщение доставлено, спасибо за обратную связь"));
                 myCurrentUser.setWaitFeedback(false);
             } catch (TelegramApiException e) {
@@ -155,7 +156,7 @@ public class App extends TelegramLongPollingBot {
             }
 
             if (update.getCallbackQuery().getData().equals("Биржевой (live)") && myCurrentUser.isWaitCouple()) {
-                LOGGER.info("Used exchange (live) -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Используется 'Биржевой (live)' -> " + Logs.sendConsoleLog(update));
 
                 User user = update.getCallbackQuery().getFrom();
                 ResultSet resultSet = db.findUser(user.getId());
@@ -179,7 +180,7 @@ public class App extends TelegramLongPollingBot {
                 myCurrentUser.setWaitCouple(false);
                 setNullFromCurrency(myCurrentUser);
             } else if (update.getCallbackQuery().getData().equals("Биржевой") && myCurrentUser.isWaitCouple()) {
-                LOGGER.info("Used exchange -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Используется 'Биржевой' " + Logs.sendConsoleLog(update));
 
                 try {
                     switch (myCurrentUser.getCurrencyFrom()) {
@@ -216,7 +217,7 @@ public class App extends TelegramLongPollingBot {
                 setNullFromCurrency(myCurrentUser);
                 myCurrentUser.setWaitCouple(false);
             } else if (update.getCallbackQuery().getData().equals("Биржевой") && myCurrentUser.isWaitSumForSchedule()) {
-                LOGGER.info("Used exchange (live) -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Используется 'Биржевой (live)' -> " + Logs.sendConsoleLog(update));
 
                 if (myCurrentUser.isWaitRate()) {
 
@@ -232,7 +233,7 @@ public class App extends TelegramLongPollingBot {
             }
 
             if (myCurrentUser.getCurrencyFrom() != null && myCurrentUser.getCurrencyTo() != null && !myCurrentUser.isWaitRate()) {
-                LOGGER.info("Used exchange -> " + Logs.sendConsoleLog(update));
+                LOGGER.info("Используется 'Биржевой' -> " + Logs.sendConsoleLog(update));
 
                 try {
                     execute(sendMessageController.editInlineMessage(update, myCurrentUser.getCurrencyFrom() +
