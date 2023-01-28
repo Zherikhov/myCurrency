@@ -54,10 +54,10 @@ public class App extends TelegramLongPollingBot {
         }
 
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(new ParsingExchange(), 0, 3, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(new ParsingExchange(), 1, 3, TimeUnit.HOURS);
 
         ScheduledExecutorService scheduler2 = Executors.newSingleThreadScheduledExecutor();
-        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 1, 61, TimeUnit.MINUTES);
+        scheduler2.scheduleAtFixedRate(new ScheduleCurrency(bot), 61, 61, TimeUnit.MINUTES);
 
         System.out.println("Загрузка выполнена в " + Date.getSourceDate());
     }
@@ -250,6 +250,27 @@ public class App extends TelegramLongPollingBot {
             }
         }
 
+        if (update.hasCallbackQuery()) {
+            if (update.getCallbackQuery().getData().equals("За каким курсом я слежу?")) {
+                try {
+                    String couple = null;
+                    float rate = 0;
+                    ResultSet resultSet = db.getRate(currentUserId);
+                    while (resultSet.next()) {
+                        couple = resultSet.getString(1);
+                        rate = resultSet.getFloat(2);
+                    }
+
+                    execute(sendMessageController.createMessage(update, "Вы указали " + rate + " для пары " + couple));
+                } catch (TelegramApiException e) {
+                    LOGGER.error("Отслеживаемый курс" + e);
+                    e.printStackTrace();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         //блок if для запуска логики с KeyboardButton и установки тригера "wait"
         if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -272,6 +293,11 @@ public class App extends TelegramLongPollingBot {
                         execute(sendMessageController.createMessage(update, "Следующее сообщение будет отправлено автору бота,\n" +
                                 "Но помни - <i>художника обидеть может каждый, не каждый может выйти из бана :)</i>"));
                         myCurrentUser.setWaitFeedback(true);
+                        break;
+                    case "Информация":
+                        LOGGER.info("Инфорамция -> " + Logs.sendConsoleLog(update));
+                        execute(inlineKeyButtonService.setInlineButton(
+                                update, "Выберите интересующую информацию:", new InlineButtonsNames().settings));
                         break;
                 }
             } catch (TelegramApiException e) {

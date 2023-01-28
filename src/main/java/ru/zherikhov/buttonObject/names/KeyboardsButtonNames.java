@@ -16,6 +16,7 @@ public class KeyboardsButtonNames {
 
     {
         keyboardRowSecond.add("Обратная связь");
+        keyboardRowSecond.add("Информация");
     }
 
     public List<List<String>> keyboardRows = new ArrayList<>();

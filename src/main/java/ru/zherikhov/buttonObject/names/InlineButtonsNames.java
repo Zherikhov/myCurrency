@@ -41,4 +41,37 @@ public class InlineButtonsNames {
     {
         InlineRowsOfSchedule.add(parsers);
     }
+
+    public final List<String> firstForSetting = new ArrayList<>();
+
+    {
+        firstForSetting.add("За каким курсом я слежу?");
+    }
+
+    public final List<String> secondForSetting = new ArrayList<>();
+
+    {
+        secondForSetting.add("Посмотреть график");
+    }
+
+    public final List<String> thirdForSetting = new ArrayList<>();
+
+    {
+        thirdForSetting.add("Поблагодарить разработчика");
+    }
+
+    public final List<String> fourthForSetting = new ArrayList<>();
+
+    {
+        fourthForSetting.add("О программе");
+    }
+
+    public List<List<String>> settings = new ArrayList<>();
+
+    {
+        settings.add(firstForSetting);
+        settings.add(secondForSetting);
+        settings.add(thirdForSetting);
+        settings.add(fourthForSetting);
+    }
 }

@@ -162,7 +162,7 @@ public class DatabaseHandler {
 
     @SneakyThrows
     public void setRate(String couple, float rate, long idTelegram) {
-        String insert = "UPDATE currency_from_user SET (couple, rate) = (?,?) WHERE id_telegram = ?;";
+        String insert = "UPDATE currency_from_user SET (couple, rate) = (?,?) WHERE id_telegram = ?";
 
         PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
         preparedStatement.setString(1, couple);
@@ -170,5 +170,14 @@ public class DatabaseHandler {
         preparedStatement.setLong(3, idTelegram);
         preparedStatement.executeUpdate();
         App.LOGGER.info("Set rate for " + idTelegram);
+    }
+
+    @SneakyThrows
+    public ResultSet getRate(long idTelegram) {
+        String insert = "SELECT couple, rate FROM currency_from_user WHERE id_telegram = (?)";
+
+        PreparedStatement preparedStatement = getDbConnection().prepareStatement(insert);
+        preparedStatement.setLong(1, idTelegram);
+        return preparedStatement.executeQuery();
     }
 }
