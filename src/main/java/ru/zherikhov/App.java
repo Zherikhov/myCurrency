@@ -251,8 +251,8 @@ public class App extends TelegramLongPollingBot {
         }
 
         if (update.hasCallbackQuery()) {
-            if (update.getCallbackQuery().getData().equals("За каким курсом я слежу?")) {
-                try {
+            try {
+                if (update.getCallbackQuery().getData().equals("За каким курсом я слежу?")) {
                     String couple = null;
                     float rate = 0;
                     ResultSet resultSet = db.getRate(currentUserId);
@@ -260,14 +260,13 @@ public class App extends TelegramLongPollingBot {
                         couple = resultSet.getString(1);
                         rate = resultSet.getFloat(2);
                     }
-
-                    execute(sendMessageController.createMessage(update, "Вы указали " + rate + " для пары " + couple));
-                } catch (TelegramApiException e) {
-                    LOGGER.error("Отслеживаемый курс" + e);
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                    execute(sendMessageController.editInlineMessage(update, "Вы указали " + rate + " для пары " + couple));
+                } else if (update.getCallbackQuery().getData().equals("О программе")) {
+                    execute(sendMessageController.editInlineMessage(update, new StartCommand().helloMessage));
                 }
+            } catch (TelegramApiException | SQLException e) {
+                LOGGER.error("Информация" + e);
+                e.printStackTrace();
             }
         }
 

@@ -19,7 +19,7 @@ public class SendMessageController {
         return sendMessage;
     }
 
-    public EditMessageText editInlineMessage(Update update, String text) {
+        public EditMessageText editInlineMessage(Update update, String text) {
         EditMessageText editMessageText = new EditMessageText();
         int messageId = update.getCallbackQuery().getMessage().getMessageId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
