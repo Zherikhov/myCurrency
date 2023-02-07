@@ -88,7 +88,7 @@ public class ScheduleCurrency implements Runnable {
                 }
                 LOGGER.info("Schedule finished for send message");
             } else {
-                App.LOGGER.info("Sleeping...");
+                App.LOGGER.info("ScheduleCurrency is sleeping...");
             }
         } catch (ParseException | SQLException | TelegramApiException e) {
             LOGGER.error("Schedule NOT finished correct for send a message", e);

@@ -72,7 +72,7 @@ public class ParsingExchange implements Runnable {
                 }
                 App.LOGGER.info("ParsingExchange completed");
             } else {
-                App.LOGGER.info("Sleeping...");
+                App.LOGGER.info("ParsingExchange is sleeping...");
             }
         } catch (Exception e) {
             App.LOGGER.error("Exception with ParsingExchange" + e);
